@@ -1,18 +1,19 @@
 <?php
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $voltage = floatval($_POST['voltage']);
-    $current = floatval($_POST['current']);
-    $rate = floatval($_POST['rate']);
 
-    // Calculate power in kW
-    $power = ($voltage * $current) / 1000; // Convert to kW
+// Function to calculate power (kW)
+function calculatePower($voltage, $current) {
+    return ($voltage * $current) / 1000; // Convert to kW
+}
 
-    // Convert rate to RM
-    $rate_rm = $rate / 100; // Convert sen/kWh to RM/kWh
+// Function to convert rate to RM
+function convertRateToRM($rate) {
+    return $rate / 100; // Convert sen/kWh to RM/kWh
+}
 
-    // Calculate energy and total cost per hour and per day
+// Function to calculate energy and total cost
+function calculateEnergyAndCost($power, $rate_rm, $hours = 24) {
     $results = [];
-    for ($hour = 1; $hour <= 24; $hour++) {
+    for ($hour = 1; $hour <= $hours; $hour++) {
         $energy = $power * $hour; // Energy in kWh
         $total = $energy * $rate_rm; // Total cost in RM
         $results[] = [
@@ -21,6 +22,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             'total' => round($total, 2)
         ];
     }
+    return $results;
+}
+
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $voltage = floatval($_POST['voltage']);
+    $current = floatval($_POST['current']);
+    $rate = floatval($_POST['rate']);
+
+    // Calculate power and rate in RM
+    $power = calculatePower($voltage, $current);
+    $rate_rm = convertRateToRM($rate);
+
+    // Get results for energy and total cost
+    $results = calculateEnergyAndCost($power, $rate_rm);
 }
 ?>
 
